@@ -1,4 +1,5 @@
 import pytest
+
 from pymavlog.helpers import to_snake_case
 
 

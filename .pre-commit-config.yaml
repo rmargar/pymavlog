@@ -23,4 +23,3 @@ repos:
     rev: '5.11.5'
     hooks:
     - id: isort
-      args: ["--profile", "black", "--line-length", "100", "-nlb", "FIRSTPARTY", "-m", "3", "-tc", "true"]
