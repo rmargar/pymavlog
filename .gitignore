@@ -1,0 +1,16 @@
+.conda
+*.bin
+*.ulg
+*.txt
+venv
+env
+.idea
+.ipynb_checkpoints
+.mypy_cache
+.vscode
+__pycache__
+.pytest_cache
+dist
+site
+.coverage
+coverage.xml

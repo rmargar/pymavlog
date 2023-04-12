@@ -1,0 +1,26 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 'v4.4.0'
+    hooks:
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+    -   id: black
+        args: # arguments to configure black
+            - --line-length=100
+-   repo: https://github.com/pycqa/flake8
+    rev: '5.0.0'
+    hooks:
+    -   id: flake8
+    args: # arguments to configure flake8
+        # making isort line length compatible with black
+        - "--max-line-length=100"
+        - "--max-complexity=18"
+-   repo: https://github.com/pycqa/isort
+    rev: '4.3.21'
+    hooks:
+    - id: isort
+      args: ["--profile", "black", "--line-length", "100", "-nlb", "FIRSTPARTY", "-m", "3", "-tc", "true"]
