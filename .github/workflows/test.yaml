@@ -32,7 +32,7 @@ jobs:
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-test-v03
       - name: Install Dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install poetry && pip install -e .
+        run: pip install -e .
       - name: Lint
         uses: github/super-linter@v4
         env:
