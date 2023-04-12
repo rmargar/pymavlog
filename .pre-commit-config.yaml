@@ -14,13 +14,13 @@ repos:
 -   repo: https://github.com/pycqa/flake8
     rev: '5.0.0'
     hooks:
-    -   id: flake8
-    args: # arguments to configure flake8
+    - id: flake8
+      args: # arguments to configure flake8
         # making isort line length compatible with black
         - "--max-line-length=100"
         - "--max-complexity=18"
 -   repo: https://github.com/pycqa/isort
-    rev: '4.3.21'
+    rev: '5.11.5'
     hooks:
     - id: isort
       args: ["--profile", "black", "--line-length", "100", "-nlb", "FIRSTPARTY", "-m", "3", "-tc", "true"]

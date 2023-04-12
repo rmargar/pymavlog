@@ -2,7 +2,7 @@
 *.bin
 *.ulg
 *.txt
-venv
+.venv
 env
 .idea
 .ipynb_checkpoints
