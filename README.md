@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/rmargar/pymavlog/branch/main/graph/badge.svg?token=0APOFRD0BT)](https://codecov.io/gh/rmargar/pymavlog)
+
 # pyulog
 
 A lightweight python to parse log files from ArduPilot vehicles based on the [MavLink](https://mavlink.io/) protocol. It is built on top of [pymavlink](https://github.com/ArduPilot/pymavlink) and uses [NumPy](https://numpy.org/) under the hood to vectorize messages.
@@ -30,6 +32,13 @@ Pymavlog is built using [Poetry](https://github.com/python-poetry/poetry), so ma
 
 ```bash
 pip install poetry
+```
+
+Lastly, install the pre-commit hooks
+
+```bash
+pip install pre-commit
+pre-commit install
 ```
 
 ## Testing
