@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+
 from pymavlog import MavLinkMessageSeries, MavLog, core
 from pymavlog.errors import EmptyLogError
 
