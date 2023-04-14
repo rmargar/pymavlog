@@ -1,13 +1,45 @@
-name: Publish
+name: "Release & Publish"
 
 on:
-  release:
-    types:
-      - published
   workflow_dispatch:
+    inputs:
+      bumpType:
+        description: 'The type of release to be performed'
+        default: 'patch'
+        required: true
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install Python Poetry
+      uses: abatilo/actions-poetry@v2.1.0
+      with:
+        poetry-version: 1.1.2
+    - name: Configure poetry
+      shell: bash
+      run: python -m poetry config virtualenvs.in-project true
+    - name: View poetry version
+      run: poetry --version
+    - name: Install dependencies
+      run: |
+        python -m poetry install
+    - name: Test with pytest
+      run: |
+        python -m poetry run python -m pytest -v tests
+
   publish:
+    name: Release
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Dump GitHub context
@@ -21,20 +53,41 @@ jobs:
           python-version: "3.7"
           cache: "pip"
           cache-dependency-path: pyproject.toml
-      - uses: actions/cache@v3
-        id: cache
-        with:
-          path: ${{ env.pythonLocation }}
-          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-publish
-      - name: Install build dependencies
-        if: steps.cache.outputs.cache-hit != 'true'
-        run: pip install build
-      - name: Build distribution
-        run: python -m build
-      - name: Publish
-        uses: pypa/gh-action-pypi-publish@v1.6.4
-        with:
-          password: ${{ secrets.PYPI_TOKEN }}
+      - name: Release
+        run: |
+          pip install python-semantic-release
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          semantic-release publish --${{ github.event.inputs.bumpType }}
+      # - uses: actions/cache@v3
+      #   id: cache
+      #   with:
+      #     path: ${{ env.pythonLocation }}
+      #     key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}-publish
+      # - name: Install build dependencies
+      #   if: steps.cache.outputs.cache-hit != 'true'
+      #   run: pip install build
+      # - name: Build distribution
+      #   run: python -m build
+      # - uses: fwilhe2/bump-version@main
+      #   id: bump
+      #   with:
+      #     component: ${{ github.event.inputs.bumpType }}
+      # - run: echo ${{ steps.bump.outputs.newVersion }}
+
+      # - uses: actions/create-release@v1
+      #   with:
+      #     tag_name: ${{ steps.bump.outputs.newVersion }}
+      # - name: Bump Version
+      #   id: version
+      #   uses: ./jetstream-ci-scripts/actions/bump-version
+      #   with:
+      #     bump-type: ${{ github.event.inputs.bumpType }}
+      # - name: Publish to Test PyPi
+      #   uses: pypa/gh-action-pypi-publish@v1.6.4
+      #   with:
+      #     repository-url: https://test.pypi.org/legacy/
+      #     password: ${{ secrets.TEST_PYPI_API_TOKEN }}
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
