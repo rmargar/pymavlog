@@ -36,6 +36,6 @@ build-backend = "poetry.core.masonry.api"
 [tool.semantic_release]
 version_toml = "pyproject.toml:tool.poetry.version"
 version_source = "tag"
-build_command = "poetry build"
+build_command = "pip install poetry && poetry build"
 repository = "testpypi"
 branch = "main"
