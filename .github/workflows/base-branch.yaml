@@ -53,7 +53,7 @@ jobs:
           github_token: ${{ secrets.GH_TOKEN }}
           repository_username: __token__
           repository_password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          additional_props: --${{ github.event.inputs.bumpType }}
+          additional_options: --${{ github.event.inputs.bumpType }}
 
       # - uses: actions/cache@v3
       #   id: cache
