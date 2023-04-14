@@ -34,7 +34,10 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.semantic_release]
-version_toml = "pyproject.toml:tool.poetry.version"
+version_toml = [
+    "pymavlog/__init__.py:__version__",
+    "pyproject.toml:tool.poetry.version"
+]
 version_source = "tag"
 build_command = "pip install poetry && poetry build"
 repository = "testpypi"
