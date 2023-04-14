@@ -32,3 +32,9 @@ coverage = "^7"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.semantic_release]
+version_toml = "pyproject.toml:tool.poetry.version"
+version_source = "tag"
+build_command = "poetry build"
+repository = "testpypi"
