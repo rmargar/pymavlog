@@ -35,7 +35,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.semantic_release]
 version_toml = [
-    "pymavlog/__init__.py:__version__",
     "pyproject.toml:tool.poetry.version"
 ]
 version_source = "tag"
