@@ -41,3 +41,4 @@ version_source = "tag"
 build_command = "pip install poetry && poetry build"
 repository = "testpypi"
 branch = "main"
+commit_version_number = true
