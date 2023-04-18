@@ -39,6 +39,6 @@ version_toml = [
 ]
 version_source = "tag"
 build_command = "pip install poetry && poetry build"
-repository = "testpypi"
+repository = "pypi"
 branch = "main"
 commit_version_number = true
