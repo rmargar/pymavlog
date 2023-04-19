@@ -2,7 +2,7 @@
 ![test](https://github.com/rmargar/pymavlog/actions/workflows/test.yaml/badge.svg)
 [![PyPI version](https://badge.fury.io/py/pymavlog.svg)](https://badge.fury.io/py/pymavlog)
 
-# pyulog
+# pymavlog
 
 A lightweight python library to parse log files from ArduPilot vehicles based on the [MavLink](https://mavlink.io/) protocol. It is built on top of [pymavlink](https://github.com/ArduPilot/pymavlink) and uses [NumPy](https://numpy.org/) under the hood to vectorize messages.
 
@@ -11,13 +11,13 @@ A lightweight python library to parse log files from ArduPilot vehicles based on
 Installation with pip:
 
 ```bash
-pip install pyulog
+pip install pymavlog
 ```
 
 or via Poetry
 
 ```bash
-poetry add pyulog
+poetry add pymavlog
 ```
 
 ## Development
