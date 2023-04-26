@@ -72,7 +72,7 @@ def test_parse_with_timestamp(mavlink_message, mock_mavutil, monkeypatch):
     mlog = MavLog(filepath="foo/bar.bin", to_datetime=True)
     mlog.parse()
 
-    assert mlog.start_timestamp == datetime.fromtimestamp(123)
-    assert mlog.end_timestamp == datetime.fromtimestamp(222)
+    assert mlog.start_timestamp == datetime.fromtimestamp(123 * 1e-6)
+    assert mlog.end_timestamp == datetime.fromtimestamp(222 * 1e-6)
 
     assert mlog.message_count == 3

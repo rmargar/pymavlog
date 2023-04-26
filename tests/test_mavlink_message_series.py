@@ -102,7 +102,7 @@ def test_append_message(mavlink_message):
 
 def test_append_message_datetime(mavlink_message):
     msg_type = "TEST"
-    content = {"TimeUS": 123, "TestA": 22, "TestB": 0.121}
+    content = {"TimeUS": 123 * 1e6, "TestA": 22, "TestB": 0.121}
     msg = mavlink_message(msg_type, content)
 
     series = MavLinkMessageSeries(
