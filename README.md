@@ -55,7 +55,7 @@ make tests
 
 ## Usage
 
-The main class of the package is `MavLog`, which parses the log file messages in-memory as NumPy arrays. You can parse a file like:
+Mavlink log files are parsed using `MavLog`, which iterates through the logged messages and saves them in-memory as NumPy arrays. You can parse a file like:
 
 ```python
 from pymavlog import MavLog
@@ -78,4 +78,13 @@ and do some calculations, for example calculating the average value:
 avg_gyr_x = imu_messages["GyrX"].mean()
 ```
 
-More info in the docs (TBD).
+Pymavlog also supports telemetry log files. You can read a tlog file `.tlog` in a similar way as binary log files, like:
+
+```python
+from pymavlog import MavTLog
+
+
+filepath = "foo/bar.tlog"
+tlog = MavTLog("foo/bar.tlog")
+tlog.parse()
+```

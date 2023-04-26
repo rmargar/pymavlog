@@ -43,6 +43,23 @@ def test_create_from_mavlink_format(mock_dfformat):
     assert isinstance(series.raw_fields["TestB"], list)
 
 
+def test_create_from_message(mock_message_v2):
+    msg = mock_message_v2()
+    series = MavLinkMessageSeries.from_message(msg)
+
+    assert isinstance(series.fields["TimeUS"], np.ndarray)
+    assert isinstance(series.fields["TestA"], np.ndarray)
+    assert isinstance(series.fields["TestB"], np.ndarray)
+
+    assert len(series.fields["TimeUS"]) == 0
+    assert len(series.fields["TestA"]) == 0
+    assert len(series.fields["TestB"]) == 0
+
+    assert isinstance(series.raw_fields["TimeUS"], list)
+    assert isinstance(series.raw_fields["TestA"], list)
+    assert isinstance(series.raw_fields["TestB"], list)
+
+
 def test_create_with_alias(mock_dfformat):
     dfformat = mock_dfformat()
     series = MavLinkMessageSeries.from_df_format(fmt=dfformat, column_alias={"TestA": "other_name"})

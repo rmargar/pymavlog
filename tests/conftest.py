@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 from pymavlink.DFReader import DFFormat
+from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 from pymavlink.mavutil import mavserial
 
 
@@ -33,6 +34,22 @@ def mock_dfformat():
 
 
 @pytest.fixture
+def mock_message_v2():
+    def wrapper(
+        name="TEST",
+        columns=["TimeUS", "TestA", "TestB"],
+        fieldtypes=["uint8_t", "uint32_t", "float"],
+    ):
+        mock_msg_v2 = Mock(spec=MAVLink_message)
+        mock_msg_v2.msgname = name
+        mock_msg_v2.get_fieldnames.return_value = columns
+        mock_msg_v2.fieldtypes = fieldtypes
+        return mock_msg_v2
+
+    return wrapper
+
+
+@pytest.fixture
 def mock_mavutil(mock_dfformat):
     mock_mavutil = Mock()
     mock_mavserial = Mock(spec=mavserial)
@@ -58,5 +75,30 @@ def mock_mavutil(mock_dfformat):
             columns=["TimeUS", "GyrX", "GyrY", "AccX", "AccY"],
             types=[int, float, float, float, float],
         ),
+    }
+    return mock_mavutil
+
+
+@pytest.fixture
+def mock_mavutil_tlog(mock_message_v2):
+    mock_mavutil = Mock()
+    mock_mavserial = Mock(spec=mavserial)
+    mock_mavutil.mavlink_connection.return_value = mock_mavserial
+    mock_mavserial.name_to_id = {
+        "RAW_IMU": 1,
+        "GPS_STATUS": 2,
+        "MAV": 3,
+        "HEARBEAT": 4,
+        "TEST": 5,
+        "BATTERY_STATUS": 6,
+    }
+
+    mock_mavserial.messages = {
+        "RAW_IMU": mock_message_v2(name="RAW_IMU"),
+        "GPS_STATUS": mock_message_v2(name="GPS_STATUS"),
+        "MAV": mock_message_v2(name="MAV"),
+        "HEARBEAT": mock_message_v2(name="HEARBEAT"),
+        "TEST": mock_message_v2(name="TEST"),
+        "BATTERY_STATUS": mock_message_v2(name="BATTERY_STATUS"),
     }
     return mock_mavutil
