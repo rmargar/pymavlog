@@ -168,10 +168,13 @@ class MavLog(object):
         message: DFMessage
 
         while True:
-            message = self._mlog.recv_match(type=self._types)
+            message = self._mlog.recv_msg()
 
             if message is None:
                 break
+
+            if message.get_type() not in self._types:
+                continue
 
             message: DFMessage
 
