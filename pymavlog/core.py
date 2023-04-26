@@ -129,7 +129,7 @@ class MavLinkMessageSeries(object):
 
         for k, v in message.items():
             if k == self._timestamp_field_name and self._to_datetime:
-                self._fields[self._column_alias.get(k, k)].append(datetime.fromtimestamp(v))
+                self._fields[self._column_alias.get(k, k)].append(datetime.fromtimestamp(v * 1e-6))
             else:
                 self._fields[self._column_alias.get(k, k)].append(v)
 
@@ -170,14 +170,14 @@ class MavLogBase(object):
     @property
     def start_timestamp(self) -> t.Union[float, datetime]:
         if self._to_datetime:
-            return datetime.fromtimestamp(self._start_timestamp)
+            return datetime.fromtimestamp(self._start_timestamp * 1e-6)
         else:
             return self._start_timestamp
 
     @property
     def end_timestamp(self) -> t.Union[float, datetime]:
         if self._to_datetime:
-            return datetime.fromtimestamp(self._end_timestamp)
+            return datetime.fromtimestamp(self._end_timestamp * 1e-6)
         else:
             return self._end_timestamp
 
