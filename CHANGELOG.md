@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v0.2.0 (2023-04-26)
+### Feature
+* Add mavtlog class ([`f3c3153`](https://github.com/rmargar/pymavlog/commit/f3c3153c361d49041c72737654efc455def2cf7d))
+
+### Documentation
+* Include small example about using mavtlog ([`f15b8cf`](https://github.com/rmargar/pymavlog/commit/f15b8cff5866e203f8f4aad7c02d1e570493eda7))
+
 ## v0.1.2 (2023-04-26)
 ### Fix
 * Typos in description ([`9b1c796`](https://github.com/rmargar/pymavlog/commit/9b1c7964bd95ed62b636305dd15456074e59054b))
