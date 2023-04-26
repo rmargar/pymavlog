@@ -4,6 +4,7 @@ from datetime import datetime
 import numpy as np
 from pymavlink import mavutil
 from pymavlink.DFReader import DFFormat, DFMessage
+from pymavlink.dialects.v20.ardupilotmega import MAVLink_message
 
 from .errors import EmptyLogError, InvalidFormatError
 
@@ -12,6 +13,19 @@ class MavLinkMessageSeries(object):
     """
     Class that represents a timeseries of MavLink messages
     """
+
+    MSG_TYPES = {
+        "uint8_t": int,
+        "uint16_t": int,
+        "uint32_t": int,
+        "uint64_t": int,
+        "int8_t": int,
+        "int16_t": int,
+        "int32_t": int,
+        "int64_t": int,
+        "float": float,
+        "char": str,
+    }
 
     def __init__(
         self,
@@ -60,6 +74,26 @@ class MavLinkMessageSeries(object):
             convert_to_datetime=convert_to_datetime,
         )
 
+    @classmethod
+    def from_message(
+        cls,
+        msg: MAVLink_message,
+        column_alias: t.Dict[str, str] = {},
+        msg_id: int = 1,
+        convert_to_datetime: bool = False,
+    ):
+        msg_types = list(map(lambda x: cls.MSG_TYPES[x], msg.fieldtypes))
+        columns = msg.get_fieldnames()
+        name = msg.msgname
+        return cls(
+            name=name,
+            columns=columns,
+            types=msg_types,
+            column_alias=column_alias,
+            msg_id=msg_id,
+            convert_to_datetime=convert_to_datetime,
+        )
+
     @property
     def fields(self) -> t.Dict[str, np.ndarray]:
         """
@@ -95,7 +129,7 @@ class MavLinkMessageSeries(object):
                 self._fields[self._column_alias.get(k, k)].append(v)
 
 
-class MavLog(object):
+class MavLogBase(object):
     def __init__(
         self,
         filepath: str,
@@ -115,8 +149,6 @@ class MavLog(object):
         self._map_columns = map_columns
         self._start_timestamp = None
         self._end_timestamp = None
-
-        self.__set_parsed_data(types)
 
     @property
     def parsed_data(self) -> t.Dict[str, MavLinkMessageSeries]:
@@ -143,23 +175,6 @@ class MavLog(object):
             return datetime.fromtimestamp(self._end_timestamp)
         else:
             return self._end_timestamp
-
-    def __set_parsed_data(self, types: t.List[str]):
-        self._types = []
-        for name, msg_id in self._mlog.name_to_id.items():
-            fmt = self._mlog.formats[msg_id]
-
-            msg_not_in_types = (types is not None) and (name not in types)
-            ignore_type = (name in self._messages_ignore) or msg_not_in_types
-            if ignore_type:
-                continue
-
-            self._types.append(fmt.name)
-            self._parsed_data[name] = MavLinkMessageSeries.from_df_format(
-                fmt, self._map_columns, msg_id, self._to_datetime
-            )
-        if not self._types:
-            raise EmptyLogError("The log contains no message types")
 
     def parse(self):
         """
@@ -207,3 +222,83 @@ class MavLog(object):
             MavLinkMessageSeries
         """
         return self._parsed_data.get(key)
+
+
+class MavLog(MavLogBase):
+    """
+    A Mavlink binary log object
+    """
+
+    def __init__(
+        self,
+        filepath: str,
+        messages_to_ignore: t.List[str] = ["FMT", "FMTU"],
+        types: t.List[str] = None,
+        to_datetime: bool = False,
+        map_columns: t.Dict[str, str] = {},
+    ):
+        super().__init__(
+            filepath=filepath,
+            messages_to_ignore=messages_to_ignore,
+            types=types,
+            to_datetime=to_datetime,
+            map_columns=map_columns,
+        )
+
+        self.__set_parsed_data(types)
+
+    def __set_parsed_data(self, types: t.List[str]):
+        self._types = []
+        for name, msg_id in self._mlog.name_to_id.items():
+            fmt = self._mlog.formats[msg_id]
+            msg_not_in_types = (types is not None) and (name not in types)
+            ignore_type = (name in self._messages_ignore) or msg_not_in_types
+            if ignore_type:
+                continue
+
+            self._types.append(fmt.name)
+            self._parsed_data[name] = MavLinkMessageSeries.from_df_format(
+                fmt, self._map_columns, msg_id, self._to_datetime
+            )
+        if not self._types:
+            raise EmptyLogError("The log contains no message types")
+
+
+class MavTLog(MavLogBase):
+    """
+    A MavLink Telemetry log object
+    """
+
+    def __init__(
+        self,
+        filepath: str,
+        messages_to_ignore: t.List[str] = ["HEARTBEAT", "MAV"],
+        types: t.List[str] = None,
+        to_datetime: bool = False,
+        map_columns: t.Dict[str, str] = {},
+    ):
+        super().__init__(
+            filepath=filepath,
+            messages_to_ignore=messages_to_ignore,
+            types=types,
+            to_datetime=to_datetime,
+            map_columns=map_columns,
+        )
+
+        self.__set_parsed_data(types)
+
+    def __set_parsed_data(self, types: t.List[str]):
+        self._types = []
+        for name, msg_id in self._mlog.name_to_id.items():
+            msg = self._mlog.messages.get(name)
+            msg_not_in_types = (types is not None) and (name not in types)
+            ignore_type = (name in self._messages_ignore) or msg_not_in_types
+            if ignore_type:
+                continue
+
+            self._types.append(name)
+            self._parsed_data[name] = MavLinkMessageSeries.from_message(
+                msg, self._map_columns, msg_id, self._to_datetime
+            )
+        if not self._types:
+            raise EmptyLogError("The log contains no message types")
