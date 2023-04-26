@@ -11,8 +11,10 @@ def mavlink_message():
     def wrapper(
         msg_type: str = "TEST",
         content: dict = {"TimeUS": 123, "TestA": 22, "TestB": 0.121},
+        timestamp: float = 123,
     ):
         message = Mock()
+        message._timestamp = timestamp
         message.get_type.return_value = msg_type
         content["mavpackettype"] = msg_type
         message.to_dict.return_value = content

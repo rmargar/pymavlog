@@ -35,29 +35,29 @@ class MavLinkMessageSeries(object):
         column_alias: t.Dict[str, str] = {},
         msg_id: int = 1,
         convert_to_datetime: bool = False,
-        timestamp_field_name: str = "TimeUS",
     ) -> None:
         self.name = name
         self.id = msg_id
         self._to_datetime = convert_to_datetime
         self._column_alias = column_alias
-        self._timestamp_field_name = timestamp_field_name
 
         if len(columns) != len(types):
             raise InvalidFormatError("columns and types must have the same length")
 
-        self._columns = columns
-        self._types = types
+        self._columns = ["timestamp"]
+        if self._to_datetime:
+            self._types = [datetime]
+        else:
+            self._types = [float]
+
+        self._columns.extend(columns)
+        self._types.extend(types)
         self._fields: t.Dict[str, t.List[datetime | int | float]] = {}
 
         self.__set_series()
 
-    def __set_series(
-        self,
-    ):
-        for idx, c in enumerate(self._columns):
-            if c == self._timestamp_field_name:
-                self._types[idx] = datetime
+    def __set_series(self):
+        for c in self._columns:
             self._fields[self._column_alias.get(c, c)] = []
 
     @classmethod
@@ -84,7 +84,6 @@ class MavLinkMessageSeries(object):
         column_alias: t.Dict[str, str] = {},
         msg_id: int = 1,
         convert_to_datetime: bool = False,
-        timestamp_field_name: str = "TimeUS",
     ):
         msg_types = list(map(lambda x: cls.MSG_TYPES[x], msg.fieldtypes))
         columns = msg.get_fieldnames()
@@ -96,7 +95,6 @@ class MavLinkMessageSeries(object):
             column_alias=column_alias,
             msg_id=msg_id,
             convert_to_datetime=convert_to_datetime,
-            timestamp_field_name=timestamp_field_name,
         )
 
     @property
@@ -119,24 +117,28 @@ class MavLinkMessageSeries(object):
         """
         return self._fields
 
-    def append_message(self, message: dict) -> None:
-        msg_type = message["mavpackettype"]
+    def append_message(self, message: DFMessage) -> None:
+        msg_dict = message.to_dict()
+        msg_type = msg_dict["mavpackettype"]
 
         if msg_type != self.name:
             raise ValueError(f"Invalid message type, got {msg_type}, expected {self.name}")
 
-        message.pop("mavpackettype")
+        timestamp = getattr(message, "_timestamp", None)
 
-        for k, v in message.items():
-            if k == self._timestamp_field_name and self._to_datetime:
-                self._fields[self._column_alias.get(k, k)].append(datetime.fromtimestamp(v * 1e-6))
+        msg_dict.pop("mavpackettype")
+
+        if timestamp:
+            if self._to_datetime:
+                self._fields["timestamp"].append(datetime.fromtimestamp(timestamp))
             else:
-                self._fields[self._column_alias.get(k, k)].append(v)
+                self._fields["timestamp"].append(timestamp)
+
+        for k, v in msg_dict.items():
+            self._fields[self._column_alias.get(k, k)].append(v)
 
 
 class MavLogBase(object):
-    _timestamp_fieldname = "TimeUS"
-
     def __init__(
         self,
         filepath: str,
@@ -170,14 +172,14 @@ class MavLogBase(object):
     @property
     def start_timestamp(self) -> t.Union[float, datetime]:
         if self._to_datetime:
-            return datetime.fromtimestamp(self._start_timestamp * 1e-6)
+            return datetime.fromtimestamp(self._start_timestamp)
         else:
             return self._start_timestamp
 
     @property
     def end_timestamp(self) -> t.Union[float, datetime]:
         if self._to_datetime:
-            return datetime.fromtimestamp(self._end_timestamp * 1e-6)
+            return datetime.fromtimestamp(self._end_timestamp)
         else:
             return self._end_timestamp
 
@@ -198,16 +200,13 @@ class MavLogBase(object):
 
             message: DFMessage
 
-            msg_dict = message.to_dict()
-
-            self._parsed_data[message.get_type()].append_message(msg_dict)
-
-            timestamp = msg_dict.get(self._timestamp_fieldname)
+            timestamp = getattr(message, "_timestamp", None)
             if timestamp is not None:
                 self._end_timestamp = timestamp
             if timestamp is not None and (self._msg_count == 0 or not self._start_timestamp):
-                self._start_timestamp = msg_dict.get(self._timestamp_fieldname)
+                self._start_timestamp = timestamp
 
+            self._parsed_data[message.get_type()].append_message(message)
             self._msg_count += 1
 
     def get(self, key: str):
@@ -273,8 +272,6 @@ class MavTLog(MavLogBase):
     A MavLink Telemetry log object
     """
 
-    _timestamp_fieldname = "time_boot_ms"
-
     def __init__(
         self,
         filepath: str,
@@ -304,7 +301,7 @@ class MavTLog(MavLogBase):
 
             self._types.append(name)
             self._parsed_data[name] = MavLinkMessageSeries.from_message(
-                msg, self._map_columns, msg_id, self._to_datetime, self._timestamp_fieldname
+                msg, self._map_columns, msg_id, self._to_datetime
             )
         if not self._types:
             raise EmptyLogError("The log contains no message types")

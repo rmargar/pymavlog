@@ -88,7 +88,7 @@ def test_append_message(mavlink_message):
         types=[int, int, float],
     )
 
-    series.append_message(msg.to_dict())
+    series.append_message(msg)
 
     assert len(series.fields["TimeUS"]) == 1
     assert series.fields["TimeUS"][0] == 123
@@ -102,20 +102,22 @@ def test_append_message(mavlink_message):
 
 def test_append_message_datetime(mavlink_message):
     msg_type = "TEST"
-    content = {"TimeUS": 123 * 1e6, "TestA": 22, "TestB": 0.121}
-    msg = mavlink_message(msg_type, content)
+    content = {"TimeUS": 123, "TestA": 22, "TestB": 0.121}
+    msg = mavlink_message(msg_type, content, 123)
 
     series = MavLinkMessageSeries(
         name=msg_type,
         columns=["TimeUS", "TestA", "TestB"],
         types=[int, int, float],
-        column_alias={"TimeUS": "timestamp"},
+        column_alias={"TimeUS": "time_from_start"},
         convert_to_datetime=True,
     )
 
-    series.append_message(msg.to_dict())
+    series.append_message(msg)
 
-    assert len(series.fields["timestamp"]) == 1
+    assert len(series.fields["time_from_start"]) == 1
+    assert series.fields["time_from_start"][0] == 123
+
     assert series.fields["timestamp"][0] == datetime.fromtimestamp(123)
 
 
@@ -127,9 +129,9 @@ def test_append_message_raises_value_error(mavlink_message):
         name="TEST",
         columns=["TimeUS", "TestA", "TestB"],
         types=[int, int, float],
-        column_alias={"TimeUS": "timestamp"},
+        column_alias={"TimeUS": "time_from_start"},
         convert_to_datetime=True,
     )
 
     with pytest.raises(ValueError):
-        series.append_message(msg.to_dict())
+        series.append_message(msg)

@@ -43,8 +43,12 @@ def test_mavlog_defined_types_raises_error(mavlink_message, mock_mavutil, monkey
 def test_parse(mavlink_message, mock_mavutil, monkeypatch):
     mock_mavutil.mavlink_connection().recv_msg.side_effect = [
         mavlink_message(),
-        mavlink_message(msg_type="GPS", content={"TimeUS": 222, "Lat": 0.22, "Lon": 0.121}),
-        mavlink_message(msg_type="UNKNOWNTYPE", content={"TimeUS": 222, "X": 0.22, "Y": 0.121}),
+        mavlink_message(
+            msg_type="GPS", content={"TimeUS": 222, "Lat": 0.22, "Lon": 0.121}, timestamp=222
+        ),
+        mavlink_message(
+            msg_type="UNKNOWNTYPE", content={"TimeUS": 222, "X": 0.22, "Y": 0.121}, timestamp=222
+        ),
         None,
     ]
 
@@ -63,7 +67,9 @@ def test_parse_with_timestamp(mavlink_message, mock_mavutil, monkeypatch):
     mock_mavutil.mavlink_connection().recv_msg.side_effect = [
         mavlink_message(msg_type="MULT", content={"Foo": 1, "Bar": 0.121}),
         mavlink_message(),
-        mavlink_message(msg_type="GPS", content={"TimeUS": 222, "Lat": 0.22, "Lon": 0.121}),
+        mavlink_message(
+            msg_type="GPS", content={"TimeUS": 222, "Lat": 0.22, "Lon": 0.121}, timestamp=222
+        ),
         None,
     ]
 
@@ -72,7 +78,7 @@ def test_parse_with_timestamp(mavlink_message, mock_mavutil, monkeypatch):
     mlog = MavLog(filepath="foo/bar.bin", to_datetime=True)
     mlog.parse()
 
-    assert mlog.start_timestamp == datetime.fromtimestamp(123 * 1e-6)
-    assert mlog.end_timestamp == datetime.fromtimestamp(222 * 1e-6)
+    assert mlog.start_timestamp == datetime.fromtimestamp(123)
+    assert mlog.end_timestamp == datetime.fromtimestamp(222)
 
     assert mlog.message_count == 3
