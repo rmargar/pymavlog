@@ -411,14 +411,14 @@ virtualenv = ">=20.10.0"
 
 [[package]]
 name = "pymavlink"
-version = "2.4.37"
+version = "2.4.38"
 description = "Python MAVLink code"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pymavlink-2.4.37-py3-none-any.whl", hash = "sha256:51eaf558bb122961fb5c92d46508b4b17c3652ef57695202cb77406a6e5e1313"},
-    {file = "pymavlink-2.4.37.tar.gz", hash = "sha256:754e7ad7f90e056fbe9ab7f35ff92a3553e08bb9bf427881ac2271043fdf6756"},
+    {file = "pymavlink-2.4.38-py3-none-any.whl", hash = "sha256:632d720ba62f04077c509cbd64cf6e28919571e866a882cf58335d2edf8c61f8"},
+    {file = "pymavlink-2.4.38.tar.gz", hash = "sha256:43427d2f936db27d7ff1927430ef635d5a6ead6e080d013d495055de249370fc"},
 ]
 
 [package.dependencies]
