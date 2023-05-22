@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.0 (2023-05-22)
+### Feature
+* Add columns property to series ([`9c8654b`](https://github.com/rmargar/pymavlog/commit/9c8654b457e9598dccd5a116bb8d79906170b581))
+* Make both mavlog and mavlink series objects subscriptable ([`d8b1d29`](https://github.com/rmargar/pymavlog/commit/d8b1d2931ef569c4a87ad4a06391ecf32bc0b98d))
+
+### Documentation
+* Add example for accessing subscriptable values ([`a06c000`](https://github.com/rmargar/pymavlog/commit/a06c000ea388119267434f9c1cc0c32ee97121cf))
+
 ## v0.2.0 (2023-04-26)
 ### Feature
 * Add mavtlog class ([`f3c3153`](https://github.com/rmargar/pymavlog/commit/f3c3153c361d49041c72737654efc455def2cf7d))

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pymavlog"
-version = "0.2.0"
+version = "0.3.0"
 description = "A lightweight python library to parse MavLink log files"
 readme = "README.md"
 license = "MIT"
