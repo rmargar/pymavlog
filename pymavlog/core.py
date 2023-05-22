@@ -193,13 +193,6 @@ class MavLogBase(object):
         else:
             return self._end_timestamp
 
-    def values(self) -> t.Iterator[np.ndarray]:
-        """
-        Returns an iterator of message values
-        """
-
-        return self.fields.values()
-
     def parse(self):
         """
         Parses the log file in-memory
