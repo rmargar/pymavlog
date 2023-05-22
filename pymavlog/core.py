@@ -60,6 +60,10 @@ class MavLinkMessageSeries(object):
         for c in self._columns:
             self._fields[self._column_alias.get(c, c)] = []
 
+    @property
+    def columns(self) -> t.List[str]:
+        return self._columns
+
     @classmethod
     def from_df_format(
         cls,
@@ -188,6 +192,13 @@ class MavLogBase(object):
             return datetime.fromtimestamp(self._end_timestamp)
         else:
             return self._end_timestamp
+
+    def values(self) -> t.Iterator[np.ndarray]:
+        """
+        Returns an iterator of message values
+        """
+
+        return self.fields.values()
 
     def parse(self):
         """
