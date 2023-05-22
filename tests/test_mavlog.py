@@ -82,3 +82,26 @@ def test_parse_with_timestamp(mavlink_message, mock_mavutil, monkeypatch):
     assert mlog.end_timestamp == datetime.fromtimestamp(222)
 
     assert mlog.message_count == 3
+
+
+def test_getitem(mock_mavutil, monkeypatch, mavlink_message):
+    mock_mavutil.mavlink_connection().recv_msg.side_effect = [
+        mavlink_message(),
+        mavlink_message(
+            msg_type="GPS", content={"TimeUS": 222, "Lat": 0.22, "Lon": 0.121}, timestamp=222
+        ),
+        mavlink_message(
+            msg_type="GPS", content={"TimeUS": 223, "Lat": 0.23, "Lon": 0.121}, timestamp=222
+        ),
+        mavlink_message(
+            msg_type="UNKNOWNTYPE", content={"TimeUS": 222, "X": 0.22, "Y": 0.121}, timestamp=222
+        ),
+        None,
+    ]
+
+    monkeypatch.setattr(core, "mavutil", mock_mavutil)
+
+    mlog = MavLog(filepath="foo/bar.bin", types="GPS")
+    series = mlog["GPS"]
+
+    assert isinstance(series, MavLinkMessageSeries)
