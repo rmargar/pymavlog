@@ -25,6 +25,8 @@ def test_create():
     assert isinstance(series.raw_fields["TestA"], list)
     assert isinstance(series.raw_fields["TestB"], list)
 
+    assert series.columns == ["timestamp", "TimeUS", "TestA", "TestB"]
+
 
 def test_create_from_mavlink_format(mock_dfformat):
     dfformat = mock_dfformat()
