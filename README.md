@@ -78,6 +78,12 @@ and do some calculations, for example calculating the average value:
 avg_gyr_x = imu_messages["GyrX"].mean()
 ```
 
+alternatively, you can access a specific attribute like:
+
+```python
+gyr_y = mavlog["IMU"]["Gyrx"]
+```
+
 Pymavlog also supports telemetry log files. You can read a tlog file `.tlog` in a similar way as binary log files, like:
 
 ```python

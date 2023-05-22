@@ -52,7 +52,7 @@ class MavLinkMessageSeries(object):
 
         self._columns.extend(columns)
         self._types.extend(types)
-        self._fields: t.Dict[str, t.List[datetime | int | float]] = {}
+        self._fields: t.Dict[str, t.List[t.Union[datetime, int, float]]] = {}
 
         self.__set_series()
 
@@ -137,6 +137,9 @@ class MavLinkMessageSeries(object):
         for k, v in msg_dict.items():
             self._fields[self._column_alias.get(k, k)].append(v)
 
+    def __getitem__(self, item: str) -> np.ndarray:
+        return self._fields[item]
+
 
 class MavLogBase(object):
     def __init__(
@@ -156,6 +159,9 @@ class MavLogBase(object):
         self._map_columns = map_columns
         self._start_timestamp = None
         self._end_timestamp = None
+
+    def __getitem__(self, item: str) -> MavLinkMessageSeries:
+        return self._parsed_data[item]
 
     @property
     def parsed_data(self) -> t.Dict[str, MavLinkMessageSeries]:

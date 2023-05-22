@@ -135,3 +135,23 @@ def test_append_message_raises_value_error(mavlink_message):
 
     with pytest.raises(ValueError):
         series.append_message(msg)
+
+
+def test_getitem(mavlink_message):
+    msg_type = "TEST"
+
+    msg_1 = mavlink_message(msg_type, {"TimeUS": 123, "TestA": 22, "TestB": 0.121})
+    msg_2 = mavlink_message(msg_type, {"TimeUS": 124, "TestA": 23, "TestB": 0.122})
+
+    series = MavLinkMessageSeries(
+        name=msg_type,
+        columns=["TimeUS", "TestA", "TestB"],
+        types=[int, int, float],
+    )
+
+    series.append_message(msg_1)
+    series.append_message(msg_2)
+
+    np.testing.assert_array_equal(series["TimeUS"], np.array([123, 124]))
+    np.testing.assert_array_equal(series["TestA"], np.array([22, 23]))
+    np.testing.assert_array_equal(series["TestB"], np.array([0.121, 0.122]))
