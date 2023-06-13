@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.3.1 (2023-06-13)
+
+
+
 ## v0.3.0 (2023-05-22)
 ### Feature
 * Add columns property to series ([`9c8654b`](https://github.com/rmargar/pymavlog/commit/9c8654b457e9598dccd5a116bb8d79906170b581))
