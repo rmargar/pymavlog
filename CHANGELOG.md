@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.0 (2023-06-20)
+
+### Feature
+
+* Add max_rate_hz to discard messages based on maximum rate ([`019ea3a`](https://github.com/rmargar/pymavlog/commit/019ea3a4f33a4a6db6b13230a90232f12a5cf3d5))
+
 ## v0.3.1 (2023-06-13)
 
 
