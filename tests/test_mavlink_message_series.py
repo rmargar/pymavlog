@@ -157,3 +157,84 @@ def test_getitem(mavlink_message):
     np.testing.assert_array_equal(series["TimeUS"], np.array([123, 124]))
     np.testing.assert_array_equal(series["TestA"], np.array([22, 23]))
     np.testing.assert_array_equal(series["TestB"], np.array([0.121, 0.122]))
+
+
+@pytest.mark.parametrize(
+    "rate,expected_timestamps",
+    [
+        (2, [123.1, 124.5, 125.1]),
+        (None, [123.1, 123.3, 124.5, 124.6, 125.1]),
+    ],
+)
+def test_reduce_rate(mavlink_message, rate, expected_timestamps):
+    msg_type = "TEST"
+
+    msg_1 = mavlink_message(
+        msg_type, {"TimeUS": 123.1, "TestA": 22, "TestB": 0.121}, timestamp=123.1
+    )
+    msg_2 = mavlink_message(
+        msg_type, {"TimeUS": 123.3, "TestA": 23, "TestB": 0.122}, timestamp=123.3
+    )
+    msg_3 = mavlink_message(
+        msg_type, {"TimeUS": 124.5, "TestA": 24, "TestB": 0.123}, timestamp=124.5
+    )
+    msg_4 = mavlink_message(
+        msg_type, {"TimeUS": 124.6, "TestA": 25, "TestB": 0.124}, timestamp=124.6
+    )
+    msg_5 = mavlink_message(
+        msg_type, {"TimeUS": 125.1, "TestA": 26, "TestB": 0.125}, timestamp=125.1
+    )
+    msg_6 = mavlink_message(
+        msg_type, {"TimeUS": 125.1, "TestA": 26, "TestB": 0.125}, timestamp=None
+    )
+
+    series = MavLinkMessageSeries(
+        name=msg_type,
+        columns=["TimeUS", "TestA", "TestB"],
+        types=[int, int, float],
+        max_rate_hz=rate,
+    )
+
+    series.append_message(msg_1)
+    series.append_message(msg_2)
+    series.append_message(msg_3)
+    series.append_message(msg_4)
+    series.append_message(msg_5)
+    series.append_message(msg_6)
+
+    assert len(series.fields["timestamp"]) == len(expected_timestamps)
+    assert all(s in expected_timestamps for s in series.fields["timestamp"])
+
+
+def test_series_raises_value_error_invalid_rate():
+    with pytest.raises(ValueError):
+        MavLinkMessageSeries(
+            name="TEST",
+            columns=["TimeUS", "TestA", "TestB"],
+            types=[int, int, float],
+            max_rate_hz="foo",
+        )
+
+
+def test_series_does_not_reduce_parm(mavlink_message):
+    msg_type = "PARM"
+
+    msg_1 = mavlink_message(
+        msg_type, {"TimeUS": 123.1, "TestA": 22, "TestB": 0.121}, timestamp=123.1
+    )
+    msg_2 = mavlink_message(
+        msg_type, {"TimeUS": 123.3, "TestA": 23, "TestB": 0.122}, timestamp=123.3
+    )
+    msg_3 = mavlink_message(
+        msg_type, {"TimeUS": 123.3, "TestA": 23, "TestB": 0.122}, timestamp=123.35
+    )
+
+    series = MavLinkMessageSeries(
+        name=msg_type, columns=["TimeUS", "TestA", "TestB"], types=[int, int, float], max_rate_hz=1
+    )
+
+    series.append_message(msg_1)
+    series.append_message(msg_2)
+    series.append_message(msg_3)
+
+    assert len(series.fields["timestamp"]) == 3

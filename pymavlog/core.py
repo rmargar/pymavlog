@@ -35,6 +35,7 @@ class MavLinkMessageSeries(object):
         column_alias: t.Dict[str, str] = {},
         msg_id: int = 1,
         convert_to_datetime: bool = False,
+        max_rate_hz: int = None,
     ) -> None:
         self.name = name
         self.id = msg_id
@@ -54,9 +55,45 @@ class MavLinkMessageSeries(object):
         self._types.extend(types)
         self._fields: t.Dict[str, t.List[t.Union[datetime, int, float]]] = {}
 
-        self.__set_series()
+        self._set_series()
 
-    def __set_series(self):
+        self._skip_messages = False
+
+        if max_rate_hz is not None:
+            self._skip_messages = True
+            if type(max_rate_hz) in [float, int] and max_rate_hz > 0:
+                self._max_rate_hz = max_rate_hz
+            else:
+                raise ValueError(f"invalid rate, should be higher than 0, {max_rate_hz}")
+            self._last_message_rate_t = {}
+
+    def _reduce_msg_rate(self, m: MAVLink_message) -> bool:
+        """
+        Function to skip messages based on the max rate (Hz)
+        """
+
+        mtype = m.get_type()
+
+        if mtype in ["PARM", "MSG", "FMT", "FMTU", "MULT", "MODE", "EVT"]:
+            return False
+
+        t = getattr(m, "_timestamp", None)
+
+        if t is None:
+            return False
+
+        if mtype not in self._last_message_rate_t:
+            self._last_message_rate_t[mtype] = t
+
+        dt = t - self._last_message_rate_t[mtype]
+
+        if dt <= 0 or dt >= 1.0 / self._max_rate_hz:
+            self._last_message_rate_t[mtype] = t
+            return False
+
+        return True
+
+    def _set_series(self):
         for c in self._columns:
             self._fields[self._column_alias.get(c, c)] = []
 
@@ -71,6 +108,7 @@ class MavLinkMessageSeries(object):
         column_alias: t.Dict[str, str] = {},
         msg_id: int = 1,
         convert_to_datetime: bool = False,
+        max_rate_hz: int = None,
     ):
         return cls(
             name=fmt.name,
@@ -79,6 +117,7 @@ class MavLinkMessageSeries(object):
             column_alias=column_alias,
             msg_id=msg_id,
             convert_to_datetime=convert_to_datetime,
+            max_rate_hz=max_rate_hz,
         )
 
     @classmethod
@@ -88,6 +127,7 @@ class MavLinkMessageSeries(object):
         column_alias: t.Dict[str, str] = {},
         msg_id: int = 1,
         convert_to_datetime: bool = False,
+        max_rate_hz: int = None,
     ):
         msg_types = list(map(lambda x: cls.MSG_TYPES[x], msg.fieldtypes))
         columns = msg.get_fieldnames()
@@ -99,6 +139,7 @@ class MavLinkMessageSeries(object):
             column_alias=column_alias,
             msg_id=msg_id,
             convert_to_datetime=convert_to_datetime,
+            max_rate_hz=max_rate_hz,
         )
 
     @property
@@ -128,6 +169,9 @@ class MavLinkMessageSeries(object):
         if msg_type != self.name:
             raise ValueError(f"Invalid message type, got {msg_type}, expected {self.name}")
 
+        if self._skip_messages and self._reduce_msg_rate(message):
+            return None
+
         timestamp = getattr(message, "_timestamp", None)
 
         msg_dict.pop("mavpackettype")
@@ -153,6 +197,7 @@ class MavLogBase(object):
         types: t.List[str] = None,
         to_datetime: bool = False,
         map_columns: t.Dict[str, str] = {},
+        max_rate_hz: float = None,
     ):
         self._messages_ignore = messages_to_ignore
         self._mlog: mavutil.mavserial = mavutil.mavlink_connection(filepath)
@@ -163,6 +208,7 @@ class MavLogBase(object):
         self._map_columns = map_columns
         self._start_timestamp = None
         self._end_timestamp = None
+        self._max_rate_hz = max_rate_hz
 
     def __getitem__(self, item: str) -> MavLinkMessageSeries:
         return self._parsed_data[item]
@@ -249,6 +295,7 @@ class MavLog(MavLogBase):
         types: t.List[str] = None,
         to_datetime: bool = False,
         map_columns: t.Dict[str, str] = {},
+        max_rate_hz: float = None,
     ):
         super().__init__(
             filepath=filepath,
@@ -256,11 +303,12 @@ class MavLog(MavLogBase):
             types=types,
             to_datetime=to_datetime,
             map_columns=map_columns,
+            max_rate_hz=max_rate_hz,
         )
 
-        self.__set_parsed_data(types)
+        self._set_parsed_data(types)
 
-    def __set_parsed_data(self, types: t.List[str]):
+    def _set_parsed_data(self, types: t.List[str]):
         self._types = []
         for name, msg_id in self._mlog.name_to_id.items():
             fmt = self._mlog.formats[msg_id]
@@ -271,7 +319,7 @@ class MavLog(MavLogBase):
 
             self._types.append(fmt.name)
             self._parsed_data[name] = MavLinkMessageSeries.from_df_format(
-                fmt, self._map_columns, msg_id, self._to_datetime
+                fmt, self._map_columns, msg_id, self._to_datetime, self._max_rate_hz
             )
         if not self._types:
             raise EmptyLogError("The log contains no message types")
@@ -289,6 +337,7 @@ class MavTLog(MavLogBase):
         types: t.List[str] = None,
         to_datetime: bool = False,
         map_columns: t.Dict[str, str] = {},
+        max_rate_hz: float = None,
     ):
         super().__init__(
             filepath=filepath,
@@ -311,7 +360,7 @@ class MavTLog(MavLogBase):
 
             self._types.append(name)
             self._parsed_data[name] = MavLinkMessageSeries.from_message(
-                msg, self._map_columns, msg_id, self._to_datetime
+                msg, self._map_columns, msg_id, self._to_datetime, self._max_rate_hz
             )
         if not self._types:
             raise EmptyLogError("The log contains no message types")
