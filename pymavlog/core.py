@@ -186,7 +186,7 @@ class MavLinkMessageSeries(object):
             self._fields[self._column_alias.get(k, k)].append(v)
 
     def __getitem__(self, item: str) -> np.ndarray:
-        return self._fields[item]
+        return self.fields[item]
 
 
 class MavLogBase(object):
