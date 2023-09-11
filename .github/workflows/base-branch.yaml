@@ -49,7 +49,7 @@ jobs:
           fetch-depth: 0
       - name: Semantic Release
         run: |
-          pip install python-semantic-release
+          pip install python-semantic-release==7.34.6
           git config user.name github-actions
           git config user.email github-actions@github.com
           semantic-release publish --${{ github.event.inputs.bumpType }} -v DEBUG
