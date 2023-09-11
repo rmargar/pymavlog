@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.4.1 (2023-09-11)
+
+### Fix
+
+* Fields indexing: ([`a17ded0`](https://github.com/rmargar/pymavlog/commit/a17ded06670ab4e6daf25a21d7727357f165815f))
+
 ## v0.4.0 (2023-06-20)
 
 ### Feature
