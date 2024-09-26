@@ -353,6 +353,8 @@ class MavTLog(MavLogBase):
         self._types = []
         for name, msg_id in self._mlog.name_to_id.items():
             msg = self._mlog.messages.get(name)
+            if msg is None:
+                continue
             msg_not_in_types = (types is not None) and (name not in types)
             ignore_type = (name in self._messages_ignore) or msg_not_in_types
             if ignore_type:
