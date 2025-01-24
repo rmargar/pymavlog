@@ -40,7 +40,7 @@ jobs:
       - name: Test
         run: poetry install && make test
       - name: Code coverage
-        uses: codecov/codecov-action@v5.1.2
+        uses: codecov/codecov-action@v5.3.0
         with:
            verbose: true
            files: ./coverage.xml
